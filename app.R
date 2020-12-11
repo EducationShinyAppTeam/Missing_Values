@@ -90,7 +90,7 @@ ui <- list(
             br(),
             br(),
             br(),
-            div(class = "updated", "Last Update: 11/30/2020 by DG")
+            div(class = "updated", "Last Update: 12/10/2020 by DG")
           )
         ),
         #Second tab - Prerequisite Tab ----
@@ -224,15 +224,14 @@ ui <- list(
             # Level 2 ----
             tabPanel('LEVEL 2',
                      h2("Visualizations"),
+                     fluidRow(
                      # Choose dataset
                      column(
                        width = 3,
                        selectInput(
                          inputId = "inputLevel2",
                          label = "Select Data Set",
-                         choices = c('Diabetes'
-                                     #'Iris'
-                                     )
+                         choices = c('Diabetes','Iris')
                        )
                      ),
                      column(
@@ -240,7 +239,8 @@ ui <- list(
                        selectInput(
                          inputId = "imputation_method",
                          label = "Select Imputation Method",
-                         choices = c('Complete Case Analysis', 'Mean', 'Fill in 0s')
+                         choices = c('Complete Case Analysis', 'Mean',
+                                     'Fill in 0s', 'MICE')
                        )
                      ),
                      # Choose Independent variable ----
@@ -257,6 +257,15 @@ ui <- list(
                            ),
                            selected = "SkinThickness"
                          )
+                       ),
+                       conditionalPanel(
+                         condition = "input.inputLevel2 == 'Iris'",
+                         selectInput(
+                           inputId = "Yiris",
+                           label = "Select an Independent variable",
+                           choices = list("Sepal.Length"),
+                           selected = "Sepal.Length"
+                         )
                        )
                      ),
                      # Choose Dependent variable ----
@@ -270,52 +279,78 @@ ui <- list(
                            choices = list("Age"),
                            selected = "Age"
                          )
-                       )
-                     ),
+                       ),
+                       conditionalPanel(
+                         condition = "input.inputLevel2 == 'Iris'",
+                         selectInput(
+                           inputId = "Xiris",
+                           label = "Select a dependent variable",
+                           choices = list("Sepal.Width", "Petal.Length", 
+                                          "Petal.Width"
+                           ),
+                           selected = "Sepal.Width"
+                         )
+                       ),
+                     )),
                      # Count NAs in the dataset
                      conditionalPanel(
                        condition = "input.inputLevel2 == 'Diabetes'",
-                       checkboxInput(
-                         inputId = "count_chekced_diabetes",
-                         label = strong("Count NAs by variables"),
-                         value = FALSE
-                       ),
-                       verbatimTextOutput("countNasDiabetes")
+                       box(
+                         title = strong("Count NAs by variables"),
+                         status = "primary",
+                         collapsible = TRUE,
+                         collapsed = FALSE,
+                         width = '100%',
+                         DT::DTOutput("countNasDiabetes"))
+                      ),
+                     conditionalPanel(
+                       condition = "input.inputLevel2 == 'Iris'",box(
+                         title = strong("Count NAs by variables"),
+                         status = "primary",
+                         collapsible = TRUE,
+                         collapsed = FALSE,
+                         width = '100%',
+                         DT::DTOutput("countNasIris"))
                      ),
                      br(),
                      fluidRow(
                        conditionalPanel(
                          condition = "input.inputLevel2 == 'Diabetes'",
                          h3("Scatter Plot", align = 'center'),
-                         plotOutput("diabetesPlot"),
-                         br(),
-                         h3('Statistic Summary', align = 'center'),
-                         DT::DTOutput('values')
+                         plotOutput("diabetesPlot")
+                       ),
+                       conditionalPanel(
+                         condition = "input.inputLevel2 == 'Iris'",
+                         h3("Scatter Plot", align = 'center'),
+                         column(
+                           width = 6,
+                           plotOutput("irisPlot0")
+                         ),
+                         column(
+                           width = 6,
+                           plotOutput("irisPlot")
+                         )
                        )
                      )
             ),
             # Level 3 ----
             tabPanel('LEVEL 3',
-                     h2("Advanced Imputation Method: MICE"),
+                     h2("Quantifications"),
                      fluidRow(column(
                        width = 4,
                        selectInput(
                          inputId = "inputLevel3",
                          label = "Select Data Set",
-                         choices = c('Iris'
-                                     #'Diabetes'
-                                     )
+                         choices = c('Iris', 'Diabetes')
                        )
                      ),
                      column(
                        width = 4,
                        selectInput(
-                         inputId = "inputeMethods",
+                         inputId = "imp_methods",
                          label = "Select Method",
-                         choices = c('MICE'
-                                     #'Complete Analysis Case',
-                                     #'Mean', 'Fill in 0s' 
-                                     )
+                         choices = c('Complete Case Analysis','Mean',
+                                     'Fill in 0s','MICE')
                        )
                      )),
                      br(),
@@ -324,7 +359,7 @@ ui <- list(
                        fluidRow(
                          checkboxInput(
                            inputId = "count_chekced_sampleDT",
-                           label = ("Observe random generated datatable"),
+                           label = ("Observe sampled datatable"),
                            value = FALSE
                          ),
                          DT::DTOutput(outputId = "manipulated_DT")),
@@ -333,24 +368,27 @@ ui <- list(
                        br(),
                        fluidRow(
                          column(
-                           width = 2,
-                           p("original output")),
+                           width = 4,
+                           p("original full fit output")),
                          column(
-                           width = 2,
-                           offset = 4,
-                           p("MICE output")
+                           width = 4,
+                           offset = 2,
+                           p("Different Imputation methods")
                          )
                        ),
                        br(),
                        fluidRow(
                          column(
                            width = 6,
-                           verbatimTextOutput("iris0_output")
+                           DT::DTOutput("original_reg_summary")
                          ),
                          column(
                            width = 6,
-                           verbatimTextOutput("iris1_output")
-                         )),
+                           DT::DTOutput("reg_summary")
+                         )
+                       ),
+                       br(),
+                       fluidRow(h3("Compare values"), align = "center"),
                        br(),
                        fluidRow(
                          column(
@@ -360,9 +398,10 @@ ui <- list(
                          column(
                            width = 2,
                            offset = 4,
-                           p("MICE values")
+                           p("Imputed values")
                          )
-                       ), br(),
+                       ),
+                       br(),
                        fluidRow(
                          column(
                            width = 6,
@@ -370,10 +409,69 @@ ui <- list(
                          ),
                          column(
                            width = 6,
-                           verbatimTextOutput("iris_real_values")
+                           DT::DTOutput("imp_values")
                          )
                        )
-                     ), br()
+                     ),
+                     conditionalPanel(
+                       condition = "input.inputLevel3 == 'Diabetes'",
+                       fluidRow(
+                         checkboxInput(
+                           inputId = "count_chekced_sampleDT_Diabetes",
+                           label = ("Observe sampled datatable"),
+                           value = FALSE
+                         ),
+                         DT::DTOutput(outputId = "manipulated_DT_Diabetes")),
+                       br(),
+                       fluidRow(h3("Compare outputs"), align = "center"),
+                       br(),
+                       fluidRow(
+                         column(
+                           width = 4,
+                           p("original full fit output")),
+                         column(
+                           width = 4,
+                           offset = 2,
+                           p("Different Imputation methods")
+                         )
+                       ),
+                       br(),
+                       fluidRow(
+                         column(
+                           width = 6,
+                           DT::DTOutput("original_reg_summary2")
+                         ),
+                         column(
+                           width = 6,
+                           DT::DTOutput("reg_summary2")
+                         )
+                       ),
+                       br(),
+                       fluidRow(h3("Compare values"), align = "center"),
+                       br(),
+                       fluidRow(
+                         column(
+                           width = 2,
+                           p("Original values")
+                         ),
+                         column(
+                           width = 2,
+                           offset = 4,
+                           p("Imputed values")
+                         )
+                       ),
+                       br(),
+                       fluidRow(
+                         column(
+                           width = 6,
+                           DT::DTOutput(outputId = "original_DT2")
+                         ),
+                         column(
+                           width = 6,
+                           DT::DTOutput("imp_values2")
+                         )
+                       )
+                     ),br()
             )
           )
         ),
@@ -468,7 +566,7 @@ server <- function(input, output, session) {
   data(iris)
   read.csv('diabetes.csv') -> diabetes
   
-  #Replace 0 to NAs
+  #Replace 0 to NA for Diabetes
   diabetes <- diabetes %>% 
     mutate(Insulin = ifelse(diabetes$Insulin == "0", NA, Insulin),
            BMI= ifelse(diabetes$BMI == "0", NA, BMI),
@@ -536,57 +634,98 @@ server <- function(input, output, session) {
   
   ######################## Level Start #########################################
   ## Level 2 ----
-  #show NAs by variable; Melbourne Dataset
-  output$countNasDiabetes <- renderPrint({
-    if(input$count_chekced_diabetes) {
-      sapply(diabetes, function(x) sum(is.na(x)))
-    }
-  })
+  #Data manipulation dataset to drop some values ----
+  #For Iris
+  iris1=iris
+  set.seed(999)
+  #choose 10 out of 150
+  random1=sample(1:150,10)
+  #decide which row to drop
+  random2=sample(1:5,10,replace=TRUE)
+  #convert them to NA
+  for(i in 1:10) iris1[random1[i],random2[i]]<-NA
   
-  ## Level 3 - Imputations  
+  #For Iris - Level2
+  iris20=iris
+  set.seed(999)
+  #choose 10 out of 150
+  random1=sample(1:150,20)
+  #decide which row to drop
+  random2=sample(1:5,20,replace=TRUE)
+  #convert them to NA
+  for(i in 1:20) iris20[random1[i],random2[i]]<-NA
+  
+  #For Diabetes - pick random numbers
+  diabetes0=diabetes
+  set.seed(999)
+  #choose 10 out of 150
+  random3=sample(1:768,10)
+  #decide which row to drop
+  random4=sample(1:5,10,replace=TRUE)
+  
+  #show NAs by variable; Diabetes Dataset
+  output$countNasDiabetes <- renderDT({
+      df1<-data.frame(sapply(diabetes, function(x) sum(is.na(x))))
+      # Build dataframe
+      Variables <-
+        c('Pregnancies','Glucose','BloodPressure','SkinThickness',
+          'Insulin','BMI','DiabetesPedigreeFunction','Age')
+      Number_of_NAs <- c(
+        df1$sapply.diabetes..function.x..sum.is.na.x...[1],
+        df1$sapply.diabetes..function.x..sum.is.na.x...[2],
+        df1$sapply.diabetes..function.x..sum.is.na.x...[3],
+        df1$sapply.diabetes..function.x..sum.is.na.x...[4],
+        df1$sapply.diabetes..function.x..sum.is.na.x...[5],
+        df1$sapply.diabetes..function.x..sum.is.na.x...[6],
+        df1$sapply.diabetes..function.x..sum.is.na.x...[7],
+        df1$sapply.diabetes..function.x..sum.is.na.x...[8]
+      )
+      as.data.frame(rbind(Variables, Number_of_NAs))
+  },
+  style = "bootstrap4", # You must use this style
+  rownames = TRUE,
+  options = list(
+    responsive = TRUE,
+    scrollX = TRUE,
+    paging = FALSE,
+    # Set to False for small tables
+    searching = FALSE,
+    # Set to False to turn of the search bar
+    ordering = FALSE,
+    dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+  ))
+  
+  
+  output$countNasIris <- renderDT({
+      df2<-data.frame(sapply(iris20, function(x) sum(is.na(x))))
+      # Build dataframe
+      Variables <-
+        c('Sepal.Length','Sepal.Width','Petal.Length','Petal.Width', 'Species')
+      Number_of_NAs <- c(
+        df2$sapply.iris20..function.x..sum.is.na.x...[1],
+        df2$sapply.iris20..function.x..sum.is.na.x...[2],
+        df2$sapply.iris20..function.x..sum.is.na.x...[3],
+        df2$sapply.iris20..function.x..sum.is.na.x...[4]
+      )
+      as.data.frame(rbind(Variables, Number_of_NAs))
+  },
+  style = "bootstrap4", # You must use this style
+  rownames = TRUE,
+  options = list(
+    responsive = TRUE,
+    scrollX = TRUE,
+    paging = FALSE,
+    # Set to False for small tables
+    searching = FALSE,
+    # Set to False to turn of the search bar
+    ordering = FALSE,
+    dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+  ))
+  
   observeEvent(input$inputLevel2, {
-    # Melbourne Dataset
+    # Diabetes Dataset
     if (input$inputLevel2 == 'Diabetes')
     {
-      output$values <- DT::renderDT({
-        # prepare for the new dataset(by imputation method)
-        lm(diabetes[, input$Ydiabetes] ~ diabetes$Age) -> testing
-        # mean
-        diabetes2 = diabetes
-        round(mean(diabetes2[, input$Ydiabetes], na.rm = TRUE), digits = 0) -> avg
-        replace_na(diabetes2[, input$Ydiabetes], replace = avg) -> diabetes2[, input$Ydiabetes]
-        lm(diabetes2[, input$Ydiabetes] ~ diabetes2$Age) -> testing2
-        # fill in 0s
-        diabetes3 = diabetes
-        replace_na(diabetes3[, input$Ydiabetes], replace = 0) -> diabetes3[, input$Ydiabetes]
-        lm(diabetes3[, input$Ydiabetes] ~ diabetes3$Age) -> testing3
-        
-        # Build dataframe
-        ImputeMethod <- c('Complete Case Analysis', 'Mean', 'Fill in zeros')
-        Coef <- c(format(summary(testing)$coefficients[2], digits = 4),
-                  format(summary(testing2)$coefficients[2], digits = 4),
-                  format(summary(testing3)$coefficients[2], digits = 4))
-        Pvalue <- c(format(summary(testing)$coefficients[8], digits = 4),
-                    format(summary(testing2)$coefficients[8], digits = 4),
-                    format(summary(testing3)$coefficients[8], digits = 4))
-        R_Squared <- c(format(summary(testing)$r.squared, digits = 4),
-                       format(summary(testing2)$r.squared, digits = 4),
-                       format(summary(testing3)$r.squared, digits = 4))
-        Adj_R_Squared <- c(format(summary(testing)$adj.r.squared, digits = 4),
-                           format(summary(testing2)$adj.r.squared, digits = 4),
-                           format(summary(testing3)$adj.r.squared, digits = 4))
-        data.frame(ImputeMethod, Coef, Pvalue, R_Squared, Adj_R_Squared)
-      },
-      style = "bootstrap4", # You must use this style
-      rownames = TRUE,
-      options = list(
-        responsive = TRUE,
-        scrollX = TRUE,
-        paging = FALSE, # Set to False for small tables
-        searching = FALSE, # Set to False to turn of the search bar
-        ordering = FALSE
-      )
-      )
       # Plot for Complete Case Analysis
       output$diabetesPlot = renderPlot({
         {
@@ -628,28 +767,205 @@ server <- function(input, output, session) {
         }
       })
     }
+    else if (input$inputLevel2 == 'Iris')
+    {
+      output$irisPlot0 <- renderPlot({
+        data.lm0 = lm(iris$Sepal.Length~ iris[, input$Xiris])
+        ggplot(iris, aes(iris[, input$Xiris], iris$Sepal.Length)) +
+          geom_point() +
+          labs(x=input$Xiris, y='Sepal.Length') +
+          theme_bw(base_size = 20) +
+          geom_abline(slope = coef(data.lm0)[[2]], intercept = coef(data.lm0)[[1]],
+                      col = 'black')
+      })
+      output$irisPlot <- renderPlot({
+        {
+          if (input$imputation_method == 'Complete Case Analysis')
+          {
+            data.lm = lm(iris20$Sepal.Length~ iris20[, input$Xiris])
+            ggplot(iris20, aes(iris20[, input$Xiris], iris20$Sepal.Length)) +
+              geom_point() +
+              labs(x=input$Xiris, y='Sepal.Length') +
+              theme_bw(base_size = 20) +
+              geom_abline(slope = coef(data.lm)[[2]], intercept = coef(data.lm)[[1]],
+                          col = 'blue')
+          }
+          else if (input$imputation_method == 'Mean')
+          {
+            iris21 = iris20
+            round(mean(iris21[, input$Xiris], na.rm = TRUE), digits = 0) -> avg
+            replace_na(iris21[, input$Xiris], replace = avg) -> iris21[, input$Xiris]
+            data.lm2 = lm(iris21$Sepal.Length~ iris21[, input$Xiris])
+            ggplot(iris21, aes(iris21[, input$Xiris], iris21$Sepal.Length)) +
+              geom_point() +
+              labs(x=input$Xiris, y='Sepal.Length') +
+              theme_bw(base_size = 20) +
+              geom_abline(slope = coef(data.lm2)[[2]], intercept = coef(data.lm2)[[1]],
+                          col = 'red')
+          }
+          else if (input$imputation_method == 'Fill in 0s')
+          {
+            iris22 = iris20
+            replace_na(iris22[, input$Xiris], replace = 0) -> iris22[, input$Xiris]
+            data.lm3 = lm(iris22$Sepal.Length~ iris22[, input$Xiris])
+            ggplot(diabetes3, aes(Age, diabetes3[, input$Ydiabetes])) +
+              geom_point() +
+              labs(x=input$Xiris, y='Sepal.Length') +
+              theme_bw(base_size = 20) +
+              geom_abline(slope = coef(data.lm3)[[2]], intercept = coef(data.lm3)[[1]],
+                          col = 'green')
+          }
+        }
+      })
+    }
   }) # Level 2 ends
   
   ######################## Level Start #########################################
   ## Level 3 ----
-  output$iris0_output <- renderPrint({
-    reg0=lm(Sepal.Length~Sepal.Width+Petal.Length+Species, data=iris)
-    summary(reg0)[4]
-  })
-  
-  #Data manipulation to drop some values
-  iris1=iris
-  set.seed(999)
-  #choose 20 out of 150
-  random1=sample(1:150,10)
-  #decide which row to drop
-  random2=sample(1:5,10,replace=TRUE)
-  #convert them to NA
-  for(i in 1:10) iris1[random1[i],random2[i]]<-NA
+  # Full Iris Dataset ----
+      output$original_reg_summary <- DT::renderDT({
+        reg0 = lm(Sepal.Length ~ Sepal.Width + Petal.Length + Species, data = iris)
+        sum_coef <- summary(reg0)[4]
+        # Build dataframe
+        Variables <-
+          c(
+            '(intercept)',
+            'Sepal.Width',
+            'Petal.Length',
+            'Speciesversicolor',
+            'Speciesvirginica'
+          )
+        Estimates <- c(
+          format(sum_coef$coefficients[1], digits = 2),
+          format(sum_coef$coefficients[2], digits = 2),
+          format(sum_coef$coefficients[3], digits = 2),
+          format(sum_coef$coefficients[4], digits = 2),
+          format(sum_coef$coefficients[5], digits = 2)
+        )
+        Std.Error <- c(
+          format(sum_coef$coefficients[6], digits = 2),
+          format(sum_coef$coefficients[7], digits = 2),
+          format(sum_coef$coefficients[8], digits = 2),
+          format(sum_coef$coefficients[9], digits = 2),
+          format(sum_coef$coefficients[10], digits = 2)
+        )
+        t_value <- c(
+          format(sum_coef$coefficients[11], digits = 2),
+          format(sum_coef$coefficients[12], digits = 2),
+          format(sum_coef$coefficients[13], digits = 2),
+          format(sum_coef$coefficients[14], digits = 2),
+          format(sum_coef$coefficients[15], digits = 2)
+        )
+        p_value <- c(
+          format(sum_coef$coefficients[16], digits = 2),
+          format(sum_coef$coefficients[17], digits = 2),
+          format(sum_coef$coefficients[18], digits = 2),
+          format(sum_coef$coefficients[19], digits = 2),
+          format(sum_coef$coefficients[20], digits = 2)
+        )
+        as.data.frame(cbind(Variables, Estimates, Std.Error, t_value, p_value))
+      },
+      style = "bootstrap4", # You must use this style
+      rownames = TRUE,
+      options = list(
+        responsive = TRUE,
+        scrollX = TRUE,
+        paging = FALSE,
+        # Set to False for small tables
+        searching = FALSE,
+        # Set to False to turn of the search bar
+        ordering = FALSE,
+        dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+      ))
+      output$original_reg_summary2 <- DT::renderDT({
+        reg0 = lm(Age ~ Pregnancies + Glucose + BloodPressure + SkinThickness
+                  + Insulin + BMI + DiabetesPedigreeFunction, data = diabetes)
+        sum_coef <- summary(reg0)[4]
+        # Build dataframe
+        Variables <-
+          c(
+            '(intercept)',
+            'Pregnancies',
+            'Glucose',
+            'BloodPressure',
+            'SkinThickness',
+            'Insulin',
+            'BMI',
+            'DiabetesPedigreeFunction'
+          )
+        Estimates <- c(
+          format(sum_coef$coefficients[1], digits = 2),
+          format(sum_coef$coefficients[2], digits = 2),
+          format(sum_coef$coefficients[3], digits = 2),
+          format(sum_coef$coefficients[4], digits = 2),
+          format(sum_coef$coefficients[5], digits = 2),
+          format(sum_coef$coefficients[6], digits = 2),
+          format(sum_coef$coefficients[7], digits = 2),
+          format(sum_coef$coefficients[8], digits = 2)
+        )
+        Std.Error <- c(
+          format(sum_coef$coefficients[9], digits = 2),
+          format(sum_coef$coefficients[10], digits = 2),
+          format(sum_coef$coefficients[11], digits = 2),
+          format(sum_coef$coefficients[12], digits = 2),
+          format(sum_coef$coefficients[13], digits = 2),
+          format(sum_coef$coefficients[14], digits = 2),
+          format(sum_coef$coefficients[15], digits = 2),
+          format(sum_coef$coefficients[16], digits = 2)
+        )
+        t_value <- c(
+          format(sum_coef$coefficients[17], digits = 2),
+          format(sum_coef$coefficients[18], digits = 2),
+          format(sum_coef$coefficients[19], digits = 2),
+          format(sum_coef$coefficients[20], digits = 2),
+          format(sum_coef$coefficients[21], digits = 2),
+          format(sum_coef$coefficients[22], digits = 2),
+          format(sum_coef$coefficients[23], digits = 2),
+          format(sum_coef$coefficients[24], digits = 2)
+        )
+        p_value <- c(
+          format(sum_coef$coefficients[25], digits = 2),
+          format(sum_coef$coefficients[26], digits = 2),
+          format(sum_coef$coefficients[27], digits = 2),
+          format(sum_coef$coefficients[28], digits = 2),
+          format(sum_coef$coefficients[29], digits = 2),
+          format(sum_coef$coefficients[30], digits = 2),
+          format(sum_coef$coefficients[31], digits = 2),
+          format(sum_coef$coefficients[32], digits = 2)
+        )
+        as.data.frame(cbind(Variables, Estimates, Std.Error, t_value, p_value))
+      },
+      style = "bootstrap4", # You must use this style
+      rownames = TRUE,
+      options = list(
+        responsive = TRUE,
+        scrollX = TRUE,
+        paging = FALSE,
+        # Set to False for small tables
+        searching = FALSE,
+        # Set to False to turn of the search bar
+        ordering = FALSE,
+        dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+      ))
   
   output$original_DT <- DT::renderDT({
     #original dataset
     iris[random1,]
+  },
+  style = "bootstrap4", # You must use this style
+  rownames = TRUE,
+  options = list(
+    responsive = TRUE,
+    scrollX = TRUE,
+    paging = FALSE, # Set to False for small tables
+    searching = FALSE, # Set to False to turn of the search bar
+    ordering = FALSE,
+    dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+  ))
+  
+  output$original_DT2 <- DT::renderDT({
+    #original dataset
+    diabetes[random3,]
   },
   style = "bootstrap4", # You must use this style
   rownames = TRUE,
@@ -668,7 +984,6 @@ server <- function(input, output, session) {
       iris1[random1, ]
     }
   },
-  caption = "NA generated",
   style = "bootstrap4", # You must use this style
   rownames = TRUE,
   options = list(
@@ -680,19 +995,759 @@ server <- function(input, output, session) {
     dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
   ))
   
-  #Implement the MICE
-  require(mice)
-  imp = mice(iris1,seed=1275)
-  #check out the fit ----
-  output$iris1_output <- renderPrint({
-    fit1 = with(imp,lm(Sepal.Length~Sepal.Width+Petal.Length+Species,data = iris))
-    pooled = pool(fit1)
-    summary(pooled)
-  })
-  
-  #check out the values converted from the MICE
-  output$iris_real_values <- renderPrint({
-    imp$imp
+  output$manipulated_DT_Diabetes <- DT::renderDT({
+    if(input$count_chekced_sampleDT_Diabetes) {
+      diabetes[random3, ]
+    }
+  },
+  style = "bootstrap4", # You must use this style
+  rownames = TRUE,
+  options = list(
+    responsive = TRUE,
+    scrollX = TRUE,
+    paging = FALSE, # Set to False for small tables
+    searching = FALSE, # Set to False to turn of the search bar
+    ordering = FALSE,
+    dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+  ))
+
+  #Imputation method ----
+  observeEvent(input$imp_methods, {
+    #Iris dataset
+    if (input$inputLevel3 == 'Iris') {
+      if (input$imp_methods == 'Complete Case Analysis') {
+        output$reg_summary <- DT::renderDT({
+          reg2 = lm(Sepal.Length ~ Sepal.Width + Petal.Length + Species,
+                    data = iris1)
+          sum_coef3 <- summary(reg2)[4]
+          # Build dataframe
+          Variables <-
+            c(
+              '(intercept)',
+              'Sepal.Width',
+              'Petal.Length',
+              'Speciesversicolor',
+              'Speciesvirginica'
+            )
+          Estimates <- c(
+            format(sum_coef3$coefficients[1], digits = 2),
+            format(sum_coef3$coefficients[2], digits = 2),
+            format(sum_coef3$coefficients[3], digits = 2),
+            format(sum_coef3$coefficients[4], digits = 2),
+            format(sum_coef3$coefficients[5], digits = 2)
+          )
+          Std.Error <- c(
+            format(sum_coef3$coefficients[6], digits = 2),
+            format(sum_coef3$coefficients[7], digits = 2),
+            format(sum_coef3$coefficients[8], digits = 2),
+            format(sum_coef3$coefficients[9], digits = 2),
+            format(sum_coef3$coefficients[10], digits = 2)
+          )
+          t_value <- c(
+            format(sum_coef3$coefficients[11], digits = 2),
+            format(sum_coef3$coefficients[12], digits = 2),
+            format(sum_coef3$coefficients[13], digits = 2),
+            format(sum_coef3$coefficients[14], digits = 2),
+            format(sum_coef3$coefficients[15], digits = 2)
+          )
+          p_value <- c(
+            format(sum_coef3$coefficients[16], digits = 2),
+            format(sum_coef3$coefficients[17], digits = 2),
+            format(sum_coef3$coefficients[18], digits = 2),
+            format(sum_coef3$coefficients[19], digits = 2),
+            format(sum_coef3$coefficients[20], digits = 2)
+          )
+          as.data.frame(cbind(Variables, Estimates, Std.Error, t_value, p_value))
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+        #Imputed values
+        output$imp_values <- DT::renderDT({
+          iris1[random1, ]
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+      }
+      else if (input$imp_methods == 'Mean') {
+        output$reg_summary <- DT::renderDT({
+          iris_mean = iris1
+          Species <- iris_mean$Species
+          iris_mean$Species <- NULL
+          for (i in 1:ncol(iris_mean)) {
+            iris_mean[is.na(iris_mean[, i]), i] <-
+              mean(iris_mean[, i], na.rm = TRUE)
+          }
+          iris_mean2 <- round(iris_mean, 1)
+          iris_mean2$Species <- Species
+          reg_mean = lm(Sepal.Length ~ Sepal.Width + Petal.Length + Species,
+                        data = iris_mean2)
+          sum_coef4 <- summary(reg_mean)[4]
+          # Build dataframe
+          Variables <-
+            c(
+              '(intercept)',
+              'Sepal.Width',
+              'Petal.Length',
+              'Speciesversicolor',
+              'Speciesvirginica'
+            )
+          Estimates <- c(
+            format(sum_coef4$coefficients[1], digits = 2),
+            format(sum_coef4$coefficients[2], digits = 2),
+            format(sum_coef4$coefficients[3], digits = 2),
+            format(sum_coef4$coefficients[4], digits = 2),
+            format(sum_coef4$coefficients[5], digits = 2)
+          )
+          Std.Error <- c(
+            format(sum_coef4$coefficients[6], digits = 2),
+            format(sum_coef4$coefficients[7], digits = 2),
+            format(sum_coef4$coefficients[8], digits = 2),
+            format(sum_coef4$coefficients[9], digits = 2),
+            format(sum_coef4$coefficients[10], digits = 2)
+          )
+          t_value <- c(
+            format(sum_coef4$coefficients[11], digits = 2),
+            format(sum_coef4$coefficients[12], digits = 2),
+            format(sum_coef4$coefficients[13], digits = 2),
+            format(sum_coef4$coefficients[14], digits = 2),
+            format(sum_coef4$coefficients[15], digits = 2)
+          )
+          p_value <- c(
+            format(sum_coef4$coefficients[16], digits = 2),
+            format(sum_coef4$coefficients[17], digits = 2),
+            format(sum_coef4$coefficients[18], digits = 2),
+            format(sum_coef4$coefficients[19], digits = 2),
+            format(sum_coef4$coefficients[20], digits = 2)
+          )
+          as.data.frame(cbind(Variables, Estimates, Std.Error, t_value, p_value))
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+        #Imputed values
+        output$imp_values <- DT::renderDT({
+          iris_mean = iris1
+          Species <- iris_mean$Species
+          iris_mean$Species <- NULL
+          for (i in 1:ncol(iris_mean)) {
+            iris_mean[is.na(iris_mean[, i]), i] <-
+              mean(iris_mean[, i], na.rm = TRUE)
+          }
+          iris_mean2 <- round(iris_mean, 1)
+          iris_mean2$Species <- Species
+          iris_mean2[random1, ]
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+      }
+      else if (input$imp_methods == 'Fill in 0s') {
+        #fill in 0s
+        output$reg_summary <- DT::renderDT({
+          iris_zeros = iris1
+          Species <- iris_zeros$Species
+          iris_zeros$Species <- NULL
+          for (i in 1:ncol(iris_zeros)) {
+            iris_zeros[is.na(iris_zeros[, i]), i] <- 0
+          }
+          iris_zeros2 <- round(iris_zeros, 1)
+          iris_zeros2$Species <- Species
+          reg_zeros = lm(Sepal.Length ~ Sepal.Width + Petal.Length + Species,
+                         data =
+                           iris_zeros2)
+          sum_coef5 <- summary(reg_zeros)[4]
+          # Build dataframe
+          Variables <-
+            c(
+              '(intercept)',
+              'Sepal.Width',
+              'Petal.Length',
+              'Speciesversicolor',
+              'Speciesvirginica'
+            )
+          Estimates <- c(
+            format(sum_coef5$coefficients[1], digits = 2),
+            format(sum_coef5$coefficients[2], digits = 2),
+            format(sum_coef5$coefficients[3], digits = 2),
+            format(sum_coef5$coefficients[4], digits = 2),
+            format(sum_coef5$coefficients[5], digits = 2)
+          )
+          Std.Error <- c(
+            format(sum_coef5$coefficients[6], digits = 2),
+            format(sum_coef5$coefficients[7], digits = 2),
+            format(sum_coef5$coefficients[8], digits = 2),
+            format(sum_coef5$coefficients[9], digits = 2),
+            format(sum_coef5$coefficients[10], digits = 2)
+          )
+          t_value <- c(
+            format(sum_coef5$coefficients[11], digits = 2),
+            format(sum_coef5$coefficients[12], digits = 2),
+            format(sum_coef5$coefficients[13], digits = 2),
+            format(sum_coef5$coefficients[14], digits = 2),
+            format(sum_coef5$coefficients[15], digits = 2)
+          )
+          p_value <- c(
+            format(sum_coef5$coefficients[16], digits = 2),
+            format(sum_coef5$coefficients[17], digits = 2),
+            format(sum_coef5$coefficients[18], digits = 2),
+            format(sum_coef5$coefficients[19], digits = 2),
+            format(sum_coef5$coefficients[20], digits = 2)
+          )
+          as.data.frame(cbind(Variables, Estimates, Std.Error, t_value, p_value))
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+        #Imputed values
+        output$imp_values <- DT::renderDT({
+          iris_zeros = iris1
+          Species <- iris_zeros$Species
+          iris_zeros$Species <- NULL
+          for (i in 1:ncol(iris_zeros)) {
+            iris_zeros[is.na(iris_zeros[, i]), i] <- 0
+          }
+          iris_zeros2 <- round(iris_zeros, 1)
+          iris_zeros2$Species <- Species
+          iris_zeros2[random1, ]
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+      }
+      else if (input$imp_methods == 'MICE') {
+        #MICE method ----
+        require(mice)
+        imp = mice(iris1, seed = 1275)
+        output$reg_summary <- DT::renderDT({
+          fit1 = with(imp,
+                      lm(Sepal.Length ~ Sepal.Width + Petal.Length + Species))
+          pooled = pool(fit1)
+          sum_coef2 <- summary(pooled)
+          # Build dataframe
+          Variables <-
+            c(
+              '(intercept)',
+              'Sepal.Width',
+              'Petal.Length',
+              'Speciesversicolor',
+              'Speciesvirginica'
+            )
+          Estimates <- c(
+            format(sum_coef2$estimate[1], digits = 2),
+            format(sum_coef2$estimate[2], digits = 2),
+            format(sum_coef2$estimate[3], digits = 2),
+            format(sum_coef2$estimate[4], digits = 2),
+            format(sum_coef2$estimate[5], digits = 2)
+          )
+          Std.Error <- c(
+            format(sum_coef2$std.error[1], digits = 2),
+            format(sum_coef2$std.error[2], digits = 2),
+            format(sum_coef2$std.error[3], digits = 2),
+            format(sum_coef2$std.error[4], digits = 2),
+            format(sum_coef2$std.error[5], digits = 2)
+          )
+          t_value <- c(
+            format(sum_coef2$statistic[1], digits = 2),
+            format(sum_coef2$statistic[2], digits = 2),
+            format(sum_coef2$statistic[3], digits = 2),
+            format(sum_coef2$statistic[4], digits = 2),
+            format(sum_coef2$statistic[5], digits = 2)
+          )
+          p_value <- c(
+            format(sum_coef2$p.value[1], digits = 2),
+            format(sum_coef2$p.value[2], digits = 2),
+            format(sum_coef2$p.value[3], digits = 2),
+            format(sum_coef2$p.value[4], digits = 2),
+            format(sum_coef2$p.value[5], digits = 2)
+          )
+          as.data.frame(cbind(Variables, Estimates, Std.Error, t_value, p_value))
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+        #Imputed values
+        output$imp_values <- DT::renderDT({
+          imp_table <- rbind(
+            imp$imp$Sepal.Length,
+            imp$imp$Sepal.Width,
+            imp$imp$Petal.Length,
+            imp$imp$Petal.Width,
+            imp$imp$Species
+          )
+          imp_table
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+      }
+    }
+    else if (input$inputLevel3 == 'Diabetes') {
+      #Diabetes Dataset
+      if (input$imp_methods == 'Complete Case Analysis') {
+        output$reg_summary2 <- DT::renderDT({
+          diabetes1 = diabetes
+          reg2 = lm(Age ~ Pregnancies +Glucose + BloodPressure + SkinThickness
+                    + Insulin + BMI + DiabetesPedigreeFunction, data = diabetes1)
+          sum_coef3 <- summary(reg2)[4]
+          # Build dataframe
+          Variables <-
+            c(
+              '(intercept)',
+              'Pregnancies',
+              'Glucose',
+              'BloodPressure',
+              'SkinThickness',
+              'Insulin',
+              'BMI',
+              'DiabetesPedigreeFunction'
+            )
+          Estimates <- c(
+            format(sum_coef3$coefficients[1], digits = 2),
+            format(sum_coef3$coefficients[2], digits = 2),
+            format(sum_coef3$coefficients[3], digits = 2),
+            format(sum_coef3$coefficients[4], digits = 2),
+            format(sum_coef3$coefficients[5], digits = 2),
+            format(sum_coef3$coefficients[6], digits = 2),
+            format(sum_coef3$coefficients[7], digits = 2),
+            format(sum_coef3$coefficients[8], digits = 2)
+          )
+          Std.Error <- c(
+            format(sum_coef3$coefficients[9], digits = 2),
+            format(sum_coef3$coefficients[10], digits = 2),
+            format(sum_coef3$coefficients[11], digits = 2),
+            format(sum_coef3$coefficients[12], digits = 2),
+            format(sum_coef3$coefficients[13], digits = 2),
+            format(sum_coef3$coefficients[14], digits = 2),
+            format(sum_coef3$coefficients[15], digits = 2),
+            format(sum_coef3$coefficients[16], digits = 2)
+          )
+          t_value <- c(
+            format(sum_coef3$coefficients[17], digits = 2),
+            format(sum_coef3$coefficients[18], digits = 2),
+            format(sum_coef3$coefficients[19], digits = 2),
+            format(sum_coef3$coefficients[20], digits = 2),
+            format(sum_coef3$coefficients[21], digits = 2),
+            format(sum_coef3$coefficients[22], digits = 2),
+            format(sum_coef3$coefficients[23], digits = 2),
+            format(sum_coef3$coefficients[24], digits = 2)
+          )
+          p_value <- c(
+            format(sum_coef3$coefficients[25], digits = 2),
+            format(sum_coef3$coefficients[26], digits = 2),
+            format(sum_coef3$coefficients[27], digits = 2),
+            format(sum_coef3$coefficients[28], digits = 2),
+            format(sum_coef3$coefficients[29], digits = 2),
+            format(sum_coef3$coefficients[30], digits = 2),
+            format(sum_coef3$coefficients[31], digits = 2),
+            format(sum_coef3$coefficients[32], digits = 2)
+          )
+          as.data.frame(cbind(Variables, Estimates, Std.Error, t_value, p_value))
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+        #Imputed values
+        output$imp_values2 <- DT::renderDT({
+          diabetes[random3, ]
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+      }
+      else if (input$imp_methods == 'Mean') {
+        output$reg_summary2 <- DT::renderDT({
+          diabetes_mean = diabetes
+          for (i in 1:ncol(diabetes_mean)) {
+            diabetes_mean[is.na(diabetes_mean[, i]), i] <-
+              mean(diabetes_mean[, i], na.rm = TRUE)
+          }
+          diabetes_mean2 <- round(diabetes_mean, 1)
+          reg_mean = lm(Age ~ Pregnancies + Glucose + BloodPressure +
+                          SkinThickness + Insulin + BMI + 
+                          DiabetesPedigreeFunction, data = diabetes_mean2)
+          sum_coef4 <- summary(reg_mean)[4]
+          # Build dataframe
+          Variables <-
+            c(
+              '(intercept)',
+              'Pregnancies',
+              'Glucose',
+              'BloodPressure',
+              'SkinThickness',
+              'Insulin',
+              'BMI',
+              'DiabetesPedigreeFunction'
+            )
+          Estimates <- c(
+            format(sum_coef4$coefficients[1], digits = 2),
+            format(sum_coef4$coefficients[2], digits = 2),
+            format(sum_coef4$coefficients[3], digits = 2),
+            format(sum_coef4$coefficients[4], digits = 2),
+            format(sum_coef4$coefficients[5], digits = 2),
+            format(sum_coef4$coefficients[6], digits = 2),
+            format(sum_coef4$coefficients[7], digits = 2),
+            format(sum_coef4$coefficients[8], digits = 2)
+          )
+          Std.Error <- c(
+            format(sum_coef4$coefficients[9], digits = 2),
+            format(sum_coef4$coefficients[10], digits = 2),
+            format(sum_coef4$coefficients[11], digits = 2),
+            format(sum_coef4$coefficients[12], digits = 2),
+            format(sum_coef4$coefficients[13], digits = 2),
+            format(sum_coef4$coefficients[14], digits = 2),
+            format(sum_coef4$coefficients[15], digits = 2),
+            format(sum_coef4$coefficients[16], digits = 2)
+          )
+          t_value <- c(
+            format(sum_coef4$coefficients[17], digits = 2),
+            format(sum_coef4$coefficients[18], digits = 2),
+            format(sum_coef4$coefficients[19], digits = 2),
+            format(sum_coef4$coefficients[20], digits = 2),
+            format(sum_coef4$coefficients[21], digits = 2),
+            format(sum_coef4$coefficients[22], digits = 2),
+            format(sum_coef4$coefficients[23], digits = 2),
+            format(sum_coef4$coefficients[24], digits = 2)
+          )
+          p_value <- c(
+            format(sum_coef4$coefficients[25], digits = 2),
+            format(sum_coef4$coefficients[26], digits = 2),
+            format(sum_coef4$coefficients[27], digits = 2),
+            format(sum_coef4$coefficients[28], digits = 2),
+            format(sum_coef4$coefficients[29], digits = 2),
+            format(sum_coef4$coefficients[30], digits = 2),
+            format(sum_coef4$coefficients[31], digits = 2),
+            format(sum_coef4$coefficients[32], digits = 2)
+          )
+          as.data.frame(cbind(Variables, Estimates, Std.Error, t_value, p_value))
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+        #Imputed values
+        output$imp_values2 <- DT::renderDT({
+          diabetes_mean = diabetes
+          for (i in 1:ncol(diabetes_mean)) {
+            diabetes_mean[is.na(diabetes_mean[, i]), i] <-
+              mean(diabetes_mean[, i], na.rm = TRUE)
+          }
+          diabetes_mean2 <- round(diabetes_mean, 1)
+          diabetes_mean2[random3, ]
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+      }
+      else if (input$imp_methods == 'Fill in 0s') {
+        #fill in 0s
+        output$reg_summary2 <- DT::renderDT({
+          diabetes_zeros = diabetes
+          for (i in 1:ncol(diabetes_zeros)) {
+            diabetes_zeros[is.na(diabetes_zeros[, i]), i] <- 0
+          }
+          diabetes_zeros2 <- round(diabetes_zeros, 1)
+          reg_zeros = lm(Age ~ Pregnancies + Glucose + BloodPressure +
+                           SkinThickness + Insulin + BMI +
+                           DiabetesPedigreeFunction, data = diabetes_zeros2)
+          sum_coef5 <- summary(reg_zeros)[4]
+          # Build dataframe
+          Variables <-
+            c(
+              '(intercept)',
+              'Pregnancies',
+              'Glucose',
+              'BloodPressure',
+              'SkinThickness',
+              'Insulin',
+              'BMI',
+              'DiabetesPedigreeFunction'
+            )
+          Estimates <- c(
+            format(sum_coef5$coefficients[1], digits = 2),
+            format(sum_coef5$coefficients[2], digits = 2),
+            format(sum_coef5$coefficients[3], digits = 2),
+            format(sum_coef5$coefficients[4], digits = 2),
+            format(sum_coef5$coefficients[5], digits = 2),
+            format(sum_coef5$coefficients[6], digits = 2),
+            format(sum_coef5$coefficients[7], digits = 2),
+            format(sum_coef5$coefficients[8], digits = 2)
+          )
+          Std.Error <- c(
+            format(sum_coef5$coefficients[9], digits = 2),
+            format(sum_coef5$coefficients[10], digits = 2),
+            format(sum_coef5$coefficients[11], digits = 2),
+            format(sum_coef5$coefficients[12], digits = 2),
+            format(sum_coef5$coefficients[13], digits = 2),
+            format(sum_coef5$coefficients[14], digits = 2),
+            format(sum_coef5$coefficients[15], digits = 2),
+            format(sum_coef5$coefficients[16], digits = 2)
+          )
+          t_value <- c(
+            format(sum_coef5$coefficients[17], digits = 2),
+            format(sum_coef5$coefficients[18], digits = 2),
+            format(sum_coef5$coefficients[19], digits = 2),
+            format(sum_coef5$coefficients[20], digits = 2),
+            format(sum_coef5$coefficients[21], digits = 2),
+            format(sum_coef5$coefficients[22], digits = 2),
+            format(sum_coef5$coefficients[23], digits = 2),
+            format(sum_coef5$coefficients[24], digits = 2)
+          )
+          p_value <- c(
+            format(sum_coef5$coefficients[25], digits = 2),
+            format(sum_coef5$coefficients[26], digits = 2),
+            format(sum_coef5$coefficients[27], digits = 2),
+            format(sum_coef5$coefficients[28], digits = 2),
+            format(sum_coef5$coefficients[29], digits = 2),
+            format(sum_coef5$coefficients[30], digits = 2),
+            format(sum_coef5$coefficients[31], digits = 2),
+            format(sum_coef5$coefficients[32], digits = 2)
+          )
+          as.data.frame(cbind(Variables, Estimates, Std.Error, t_value, p_value))
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+        #Imputed values
+        output$imp_values2 <- DT::renderDT({
+          diabetes_zeros = diabetes
+          for (i in 1:ncol(diabetes_zeros)) {
+            diabetes_zeros[is.na(diabetes_zeros[, i]), i] <- 0
+          }
+          diabetes_zeros2 <- round(diabetes_zeros, 1)
+          diabetes_zeros2[random3, ]
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+      }
+      else if (input$imp_methods == 'MICE') {
+        #MICE method ----
+        require(mice)
+        imp = mice(diabetes, seed = 1275)
+        output$reg_summary2 <- DT::renderDT({
+          fit1 = with(imp, lm(Age ~ Pregnancies + Glucose + BloodPressure +
+                                SkinThickness + Insulin + BMI + 
+                                DiabetesPedigreeFunction))
+          pooled = pool(fit1)
+          sum_coef2 <- summary(pooled)
+          # Build dataframe
+          Variables <-
+            c(
+              '(intercept)',
+              'Pregnancies',
+              'Glucose',
+              'BloodPressure',
+              'SkinThickness',
+              'Insulin',
+              'BMI',
+              'DiabetesPedigreeFunction'
+            )
+          Estimates <- c(
+            format(sum_coef2$estimate[1], digits = 2),
+            format(sum_coef2$estimate[2], digits = 2),
+            format(sum_coef2$estimate[3], digits = 2),
+            format(sum_coef2$estimate[4], digits = 2),
+            format(sum_coef2$estimate[5], digits = 2),
+            format(sum_coef2$estimate[6], digits = 2),
+            format(sum_coef2$estimate[7], digits = 2),
+            format(sum_coef2$estimate[8], digits = 2)
+          )
+          Std.Error <- c(
+            format(sum_coef2$std.error[1], digits = 2),
+            format(sum_coef2$std.error[2], digits = 2),
+            format(sum_coef2$std.error[3], digits = 2),
+            format(sum_coef2$std.error[4], digits = 2),
+            format(sum_coef2$std.error[5], digits = 2),
+            format(sum_coef2$std.error[6], digits = 2),
+            format(sum_coef2$std.error[7], digits = 2),
+            format(sum_coef2$std.error[8], digits = 2)
+          )
+          t_value <- c(
+            format(sum_coef2$statistic[1], digits = 2),
+            format(sum_coef2$statistic[2], digits = 2),
+            format(sum_coef2$statistic[3], digits = 2),
+            format(sum_coef2$statistic[4], digits = 2),
+            format(sum_coef2$statistic[5], digits = 2),
+            format(sum_coef2$statistic[6], digits = 2),
+            format(sum_coef2$statistic[7], digits = 2),
+            format(sum_coef2$statistic[8], digits = 2)
+          )
+          p_value <- c(
+            format(sum_coef2$p.value[1], digits = 2),
+            format(sum_coef2$p.value[2], digits = 2),
+            format(sum_coef2$p.value[3], digits = 2),
+            format(sum_coef2$p.value[4], digits = 2),
+            format(sum_coef2$p.value[5], digits = 2),
+            format(sum_coef2$p.value[6], digits = 2),
+            format(sum_coef2$p.value[7], digits = 2),
+            format(sum_coef2$p.value[8], digits = 2)
+          )
+          as.data.frame(cbind(Variables, Estimates, Std.Error, t_value, p_value))
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+        #Imputed values
+        output$imp_values2 <- DT::renderDT({
+          imp_table <- rbind(
+            imp$imp$Glucose,
+            imp$imp$BloodPressure,
+            imp$imp$SkinThickness,
+            imp$imp$Insulin,
+            imp$imp$BMI
+          )
+          head(imp_table,20)
+        },
+        style = "bootstrap4", # You must use this style
+        rownames = TRUE,
+        options = list(
+          responsive = TRUE,
+          scrollX = TRUE,
+          paging = FALSE,
+          # Set to False for small tables
+          searching = FALSE,
+          # Set to False to turn of the search bar
+          ordering = FALSE,
+          dom = 't' # Remove 'showing 1 to 1 of 1 entries' element
+        ))
+      }
+    }
   })
 }
 
