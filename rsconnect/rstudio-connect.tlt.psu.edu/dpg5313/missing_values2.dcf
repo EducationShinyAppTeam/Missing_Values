@@ -1,0 +1,12 @@
+name: missing_values2
+title: Missing_Values
+username: dpg5313
+account: dpg5313
+server: rstudio-connect.tlt.psu.edu
+hostUrl: https://rstudio-connect.tlt.psu.edu:3939/__api__
+appId: 328
+bundleId: 1778
+url: https://rstudio-connect.tlt.psu.edu:3939/content/328/
+when: 1608202573.68429
+asMultiple: FALSE
+asStatic: FALSE
