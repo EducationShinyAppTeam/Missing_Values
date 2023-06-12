@@ -2,18 +2,12 @@
 library(shiny)
 library(shinydashboard)
 library(shinyBS)
+library(shinyWidgets)
 library(boastUtils)
 library(DT)
 library(tidyverse)
 library(mice)
 
-## App Meta Data----------------------------------------------------------------
-APP_TITLE <<- "Missing Values"
-APP_DESCP  <<- paste(
-  "This app provides an opportunity to examine the impact of missing values on", 
-  "the data analysis by visualizations and quantification."
-)
-## End App Meta Data------------------------------------------------------------
 
 #### Define UI ----
 ui <- list(
@@ -26,7 +20,8 @@ ui <- list(
     ### DashboardHeader ----
     dashboardHeader(
       titleWidth = 250, 
-      title = "Missing Values", 
+      title = "Missing Values",
+      tags$li(class = "dropdown", actionLink("info", icon("info"))),
       tags$li(
         class = "dropdown", 
         tags$a(target = "_blank", icon("comments"), 
@@ -77,20 +72,26 @@ ui <- list(
           div(
             style = "text-align: center", 
             bsButton(
-              inputId = "go1", 
-              label = "GO!", 
+              inputId = "prereqButton", 
+              label = "Prerequisites", 
               size = "large", 
-              icon = icon("bolt"), 
+              icon = icon("book"), 
             )
           ), 
-          br(), 
-          br(), 
-          h2("Acknowledgements"), 
-          p("This app is coded and developed by Daehoon Gwak in July 2020.", 
-            br(), 
-            br(), 
-            br(), 
-            div(class = "updated", "Last Update: 12/10/2020 by DG")
+          br(),
+          br(),
+          h2("Acknowledgements"),
+          p(
+            "This version of the app was developed and coded by Daehoon Gwak in
+            July 2020. The app was updated in 2023 by Robert Chappell.",
+            br(),
+            br(),
+            "Cite this app as:",
+            br(),
+            citeApp(),
+            br(),
+            br(),
+            div(class = "updated", "Last Update: 06/12/2023 by RWC.")
           )
         ), 
         ## Prerequisite Tab ----
@@ -162,8 +163,8 @@ ui <- list(
           div(
             style = "text-align:center", 
             bsButton(
-              inputId = "go2", 
-              label = "GO!", 
+              inputId = "exploreButton", 
+              label = "Explore!", 
               icon("bolt"), 
               size = "large"
             )
@@ -565,7 +566,11 @@ ui <- list(
             and Rauh, J. (2020), DT: A Wrapper of the JavaScript Library
             'DataTables', R Package. Available from 
             https://cran.r-project.org/web/packages/DT/index.html"
-          )
+          ),
+          br(),
+          br(),
+          br(),
+          boastUtils::copyrightInfo()
         )
       )
     )
@@ -575,10 +580,22 @@ ui <- list(
 #### Define Server ----
 server <- function(input, output, session) {
   ## Define what each button does
-  observeEvent(input$go1, { #to prerequisite page
+  observeEvent(
+    eventExpr = input$info,
+    handlerExpr = {
+      sendSweetAlert(
+        session = session,
+        type = "info",
+        title = "Information",
+        text = "Head to the Explore page to learn how to deal with hidden values."
+      )
+    }
+  )
+  
+  observeEvent(input$prereqButton, { #to prerequisite page
     updateTabItems(session, "pages", "Prerequisites")
   })
-  observeEvent(input$go2, { #to explore page
+  observeEvent(input$exploreButton, { #to explore page
     updateTabItems(session, "pages", "explore")
   })
   # Adding in Data

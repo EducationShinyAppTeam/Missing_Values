@@ -1,0 +1,22 @@
+Title: Missing Values
+ShortName: Missing Values
+Date: 2023-06-13
+Lifecycle: experimental
+Authors@R: c(
+    person(given = "Daehoon", family = "Gwak", role = c("aut", "cre")),
+    person(given = "Robert", family = "Chappell", email = "rwc5541@psu.edu", role = c("ctb"))
+  )
+Chapter: Data Science
+Description: p("This app provides an opportunity to examine the impact of missing values on, 
+  the data analysis by visualizations and quantification.")
+LearningObjectives: c(
+    "The student will learn to understand how missing values affect data",
+    "The student will learn to understand how to deal with missing values in a dataset."
+  )
+DisplayMode: Normal
+URL: https://psu-eberly.shinyapps.io/Missing_Values
+BugReports: https://github.com/EducationShinyAppTeam/Missing_Values/issues
+License: CC-BY-NC-SA-4.0
+Tags: simulation, data science
+Type: Shiny
+
