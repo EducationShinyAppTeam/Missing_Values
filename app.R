@@ -11,13 +11,9 @@ library(mice)
 
 #### Define UI ----
 ui <- list(
-  tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", 
-              href = "https://educationshinyappteam.github.io/Style_Guide/theme/boast.css")
-  ), 
   dashboardPage(
     skin = "green", 
-    ### DashboardHeader ----
+    ### Dashboard Header ----
     dashboardHeader(
       titleWidth = 250, 
       title = "Missing Values",
@@ -55,19 +51,18 @@ ui <- list(
         tabItem(
           tabName = "Overview", 
           h1("Missing Values"), 
-          p("In this app, you will understand the meaning of missing values 
-          and figure out how important they are for machine learning."), 
+          p("In this app, you will understand the meaning and importance of 
+            missing values and learn about replacement methods."), 
           br(), 
           h2("Instructions"), 
           p("Take a tour and see how imputations affect the data analysis"), 
           tags$ol(
-            tags$li("Explore prerequisites and understand enough them 
-                    to proceed next step."), 
-            tags$li("You'll explore the datasets in Level 1"), 
+            tags$li("Explore the prerequisites and then move to the explore page"), 
+            tags$li("You'll explore the datasets in the observe tab"), 
             tags$li("You'll explore the correlation plot from the various 
-                    imputation methods in Level 2"), 
+                    imputation methods in plot tab"), 
             tags$li("You'll explore the regression summary and the imputed 
-                    values from the vrious imputation methods in Level 3")
+                    values from the various imputation methods in methods tab")
           ), 
           div(
             style = "text-align: center", 
@@ -175,46 +170,14 @@ ui <- list(
           tabName = "explore", 
           tabsetPanel(
             # Level 1 ----
-            tabPanel(title = 'LEVEL 1', 
+            tabPanel(title = 'Observe', 
                      selectInput(inputId = "inputLevel1", 
-                                 label = "SELECT DATASET", 
+                                 label = "Select Dataset", 
                                  choices = c('Diabetes', 'Iris')
-                     ), 
-                     conditionalPanel(
-                       condition = "input.inputLevel1 == 'Diabetes'", 
-                       fluidRow(
+                     ),
+                      fluidRow(
                          column(width = 8, 
-                                box(
-                                  title = strong("Display Dataset"), 
-                                  status = "primary", 
-                                  collapsible = TRUE, 
-                                  collapsed = FALSE, 
-                                  width = '100%', 
-                                  DT::DTOutput("Diabetes_analysis"))
-                                ), 
-                         column(width = 4, 
-                                box(
-                                  title = strong("Variable Information"), 
-                                  status = "primary", 
-                                  collapsible = TRUE, 
-                                  collapsed = FALSE, 
-                                  width = '100%', 
-                                  uiOutput("dataTableVariables_D")
-                                  )
-                                )
-                              )
-                     ), 
-                     conditionalPanel(
-                       condition = "input.inputLevel1 == 'Iris'", 
-                       fluidRow(
-                         column(width = 8, 
-                                box(
-                                  title = strong("Display Dataset"), 
-                                  status = "primary", 
-                                  collapsible = TRUE, 
-                                  collapsed = FALSE, 
-                                  width = '100%', 
-                                  DT::DTOutput("Iris_analysis"))
+                                DT::DTOutput("analysis")
                                 ), 
                          column(width = 4, 
                                 box(
@@ -225,12 +188,9 @@ ui <- list(
                                   width = '100%', 
                                   uiOutput("dataTableVariables")
                                 )
-                         )
-                       )
-                     )
-            ),
+                              ))), 
             # Level 2 ----
-            tabPanel(title = 'LEVEL 2', 
+            tabPanel(title = 'Plot', 
                      h2("Visualizations"), 
                      fluidRow(
                      # Choose dataset
@@ -238,7 +198,7 @@ ui <- list(
                        width = 3, 
                        selectInput(
                          inputId = "inputLevel2", 
-                         label = "Select Data Set", 
+                         label = "Select Dataset", 
                          choices = c('Diabetes','Iris')
                        )
                      ), 
@@ -258,7 +218,7 @@ ui <- list(
                          condition = "input.inputLevel2 == 'Diabetes'", 
                          selectInput(
                            inputId = "Ydiabetes", 
-                           label = "Select a dependent variable", 
+                           label = "Select a Dependent Variable", 
                            choices = list("Pregnancies", "Glucose", 
                                           "BloodPressure", "SkinThickness", 
                                           "Insulin", "BMI", 
@@ -270,7 +230,7 @@ ui <- list(
                          condition = "input.inputLevel2 == 'Iris'", 
                          selectInput(
                            inputId = "Yiris", 
-                           label = "Select an Independent variable", 
+                           label = "Select an Independent Variable", 
                            choices = list("Sepal.Length"), 
                            selected = "Sepal.Length"
                          )
@@ -356,7 +316,7 @@ ui <- list(
                      )
             ), 
             # Level 3 ----
-            tabPanel(title = 'LEVEL 3', 
+            tabPanel(title = 'Methods', 
                      h2("Quantifications"), 
                      fluidRow(column(
                        width = 4, 
@@ -386,16 +346,17 @@ ui <- list(
                          ), 
                          DT::DTOutput(outputId = "manipulated_DT")), 
                        br(), 
-                       fluidRow(h3("Compare outputs"), align = "center"), 
+                       fluidRow(h3("Compare Outputs"), align = "center"), 
                        br(), 
                        fluidRow(
                          column(
-                           width = 4, 
-                           p("original full fit output")), 
+                           width = 4,
+                           offset = 2,
+                           p("Original Full Fit Output")), 
                          column(
                            width = 4, 
-                           offset = 2, 
-                           p("Different Imputation methods")
+                           offset = 1, 
+                           p("Different Imputation Methods")
                          )
                        ), 
                        br(), 
@@ -500,7 +461,14 @@ ui <- list(
         ### References ----
         tabItem(
           tabName = "References", 
-          h2("References"), 
+          h2("References"),
+          p( # Prerequisites - Definitions of MICE method
+            class = "hangingindent", 
+            "Anon. n.d. “Multiple Imputation by Chained Equations (MICE) 
+            Explained.” Cross Validated. Retrieved June 13, 2023 
+            (https://stats.stackexchange.com/questions/421545/multiple-
+            imputation-by-chained-equations-mice-explained)."            
+          ), 
           p( # shinyBS
             class = "hangingindent", 
             "Bailey, E. (2015), shinyBS: Twitter bootstrap components for shiny, 
@@ -545,10 +513,6 @@ ui <- list(
             "Moon, K.W., (2016) Handling of missing data Available from 
             https://rstudio-pubs-static.s3.amazonaws.com/192402_012091b9adac42dbbd22c4d07cb00d36.html"
             ), 
-          p( # Prerequisites - Definitions of MICE method
-            class = "hangingindent", 
-            "https://stats.stackexchange.com/questions/421545/multiple-imputation-by-chained-equations-mice-explained"
-          ), 
           p( # Dataset - Diabetes
             class = "hangingindent", 
             "Pima Indians Diabetes Database. Available from 
@@ -609,63 +573,71 @@ server <- function(input, output, session) {
            BloodPressure = ifelse(diabetes$BloodPressure == "0", NA, BloodPressure),
            SkinThickness = ifelse(diabetes$SkinThickness == "0", NA, SkinThickness),
            Glucose = ifelse(diabetes$Glucose == "0", NA, Glucose))
-  diabetes$Outcome<-NULL
-  ######################## Level Start #########################################
+  diabetes$Outcome <- NULL
   ## Level 1(Server) ----
   # Diabetes
-  output$Diabetes_analysis <- DT::renderDT(
-    expr = diabetes, 
-    caption = "Predict the onset of diabetes based on diagnostic measures", 
-    style = "bootstrap4", 
-    rownames = TRUE, 
-    options = list(
-      responsive = TRUE, # allows the data table to be mobile friendly
-      scrollX = TRUE, # allows the user to scroll through a wide table
-      columnDefs = list(  # These will set alignment of data values
-        # Notice the use of ncol on your data frame; leave the 1 as is.
-        list(className = 'dt-center', targets = 1:ncol(diabetes))
+  output$analysis <- DT::renderDT({
+    if (input$inputLevel1 == "Diabetes") {
+      DT::datatable(
+        diabetes, 
+        caption = "Predict the onset of diabetes based on diagnostic measures", 
+        style = "bootstrap4", 
+        rownames = TRUE, 
+        options = list(
+          responsive = TRUE, 
+          scrollX = TRUE, 
+          columnDefs = list(
+            list(className = 'dt-center', targets = 1:ncol(diabetes))
+          )
+        )
       )
-    )
-  )
-  # Iris
-  output$Iris_analysis <- DT::renderDT(
-    expr = iris, 
-    caption = "Iris Dataset", 
-    style = "bootstrap4", 
-    rownames = TRUE, 
-    options = list(
-      responsive = TRUE, # allows the data table to be mobile friendly
-      scrollX = TRUE, # allows the user to scroll through a wide table
-      columnDefs = list(  # These will set alignment of data values
-        # Notice the use of ncol on your data frame; leave the 1 as is.
-        list(className = 'dt-center', targets = 1:ncol(iris))
+    }
+  })
+  
+  ## Iris
+  output$analysis <- DT::renderDT({
+    if (input$inputLevel1 == "Iris") {
+      DT::datatable(
+        iris, 
+        caption = "Iris Dataset", 
+        style = "bootstrap4", 
+        rownames = TRUE, 
+        options = list(
+          responsive = TRUE, 
+          scrollX = TRUE, 
+          columnDefs = list(
+            list(className = 'dt-center', targets = 1:ncol(iris))
+          )
+        )
       )
-    )
-  )
+    }
+  })
   ## Dictionary
-  output$dataTableVariables_D <- renderText({
-    "
-    </li><li>Pregnancies: Number of times pregnant</li><li>
-    Glucose: Plasma glucose concentration a 2 hours in an oral glucose 
-    tolerance test</li><li>
-    BloodPressure: Diastolic blood pressure (mm Hg)</li><li>
-    Diastolic blood pressure (mm Hg): Triceps skin fold thickness (mm)</li><li>
-    Insulin: 2-Hour serum insulin (mu U/ml)</li><li>
-    BMI: Body mass index (weight in kg/(height in m)^2)</li><li>
-    DiabetesPedigreeFunction: Diabetes pedigree function</li><li>
-    Age: Age (years)
-    "
+  output$dataTableVariables <- renderUI({
+    if (input$inputLevel1 == "Diabetes") {
+      tags$ul(
+        tags$li("Pregnancies: Number of times pregnant"),
+        tags$li("Glucose: Plasma glucose concentration a 2 hours in an oral glucose tolerance test"),
+        tags$li("BloodPressure: Diastolic blood pressure (mm Hg)"),
+        tags$li("SkinThickness: Triceps skin fold thickness (mm)"),
+        tags$li("Insulin: 2-Hour serum insulin (mu U/ml)"),
+        tags$li("BMI: Body mass index (weight in kg/(height in m)^2)"),
+        tags$li("DiabetesPedigreeFunction: Diabetes pedigree function"),
+        tags$li("Age: Age (years)")
+      )
+    } else if (input$inputLevel1 == "Iris") {
+      tags$ul(
+        tags$li("Sepal.Length: Length of the sepal in cm"),
+        tags$li("Sepal.Width: Width of the sepal in cm"),
+        tags$li("Petal.Length: Length of the pedal in cm"),
+        tags$li("Petal.Width: Width of the sepal in cm"),
+        tags$li("Species: Either Setosa, Versicolour or Virginica")
+      )
+    } else {
+      NULL
+    }
   })
-  output$dataTableVariables <- renderText({
-    "
-    </li><li>Sepal.Length: Length of the sepal in cm</li><li>
-    Sepal.Width: Length of the sepal in cm</li><li>
-    Petal.Length: Length of the sepal in cm</li><li>
-    Petal.Width: Length of the sepal in cm</li><li>
-    Species: Either Setosa, Versicolour or Virginica
-    "
-  })
-  ######################## Level Start #########################################
+  
   ## Level 2(Server) ----
   #Data manipulation - generate sample dataset with NA included
   #For Iris
@@ -793,7 +765,8 @@ server <- function(input, output, session) {
                           intercept = coef(data.lm3)[[1]], col = 'green')
           }
         }
-      })
+      },
+      alt = "Scatterplot of chosen dataset and variables")
     }
     else if (input$inputLevel2 == 'Iris')
     {
@@ -805,7 +778,8 @@ server <- function(input, output, session) {
           theme_bw(base_size = 20) +
           geom_abline(slope = coef(data.lm0)[[2]], 
                       intercept = coef(data.lm0)[[1]], col = 'black')
-      })
+      },
+      alt = "Scatterplot of iris dataset")
       output$irisPlot <- renderPlot({
         {
           if (input$imputation_method == 'Complete Case Analysis')
@@ -842,11 +816,11 @@ server <- function(input, output, session) {
                           intercept = coef(data.lm3)[[1]], col = 'green')
           }
         }
-      })
+      },
+      alt = "Scatterplot of chosen variables")
     }
   }) # Level 2 ends
   
-  ######################## Level Start #########################################
   ## Level 3 ----
   # Full Iris Dataset
   output$original_reg_summary <- DT::renderDT({
@@ -1058,17 +1032,17 @@ server <- function(input, output, session) {
       }
       else if (input$imp_methods == 'Mean') {
         output$reg_summary <- DT::renderDT({
-          iris_mean = iris1
-          Species <- iris_mean$Species
-          iris_mean$Species <- NULL
-          for (i in 1:ncol(iris_mean)) {
-            iris_mean[is.na(iris_mean[, i]), i] <-
-              mean(iris_mean[, i], na.rm = TRUE)
+          irisMean = iris1
+          Species <- irisMean$Species
+          irisMean$Species <- NULL
+          for (i in 1:ncol(irisMean)) {
+            irisMean[is.na(irisMean[, i]), i] <-
+              mean(irisMean[, i], na.rm = TRUE)
           }
-          iris_mean2 <- round(iris_mean, 1)
-          iris_mean2$Species <- Species
+          irisMean2 <- round(irisMean, 1)
+          irisMean2$Species <- Species
           reg_mean = lm(Sepal.Length ~ Sepal.Width + Petal.Length + Species,
-                        data = iris_mean2)
+                        data = irisMean2)
           sum_coef4 <- summary(reg_mean)[4]
           Variables <-
             c('(intercept)', 'Sepal.Width', 'Petal.Length', 'Speciesversicolor', 
@@ -1107,16 +1081,16 @@ server <- function(input, output, session) {
         ))
         #Imputed values
         output$imp_values <- DT::renderDT({
-          iris_mean = iris1
-          Species <- iris_mean$Species
-          iris_mean$Species <- NULL
-          for (i in 1:ncol(iris_mean)) {
-            iris_mean[is.na(iris_mean[, i]), i] <-
-              mean(iris_mean[, i], na.rm = TRUE)
+          irisMean = iris1
+          Species <- irisMean$Species
+          irisMean$Species <- NULL
+          for (i in 1:ncol(irisMean)) {
+            irisMean[is.na(irisMean[, i]), i] <-
+              mean(irisMean[, i], na.rm = TRUE)
           }
-          iris_mean2 <- round(iris_mean, 1)
-          iris_mean2$Species <- Species
-          iris_mean2[random1, ]
+          irisMean2 <- round(irisMean, 1)
+          irisMean2$Species <- Species
+          irisMean2[random1, ]
         }, 
         style = "bootstrap4", 
         rownames = TRUE, 
