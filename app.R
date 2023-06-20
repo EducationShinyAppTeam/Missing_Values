@@ -336,11 +336,9 @@ ui <- list(
                        )
                      )), 
                      br(), 
-                     conditionalPanel(
-                       condition = "input.inputLevel3 == 'Iris'", 
                        fluidRow(
                          checkboxInput(
-                           inputId = "count_chekced_sampleDT", 
+                           inputId = "countCheckedDT", 
                            label = ("Observe sampled datatable"), 
                            value = FALSE
                          ), 
@@ -394,67 +392,8 @@ ui <- list(
                            width = 6, 
                            DT::DTOutput("imp_values")
                          )
-                       )
-                     ), 
-                     conditionalPanel(
-                       condition = "input.inputLevel3 == 'Diabetes'", 
-                       fluidRow(
-                         checkboxInput(
-                           inputId = "count_chekced_sampleDT_Diabetes", 
-                           label = ("Observe sampled datatable"), 
-                           value = FALSE
-                         ), 
-                         DT::DTOutput(outputId = "manipulated_DT_Diabetes")), 
-                       br(), 
-                       fluidRow(h3("Compare outputs"), align = "center"), 
-                       br(), 
-                       fluidRow(
-                         column(
-                           width = 4, 
-                           p("original full fit output")), 
-                         column(
-                           width = 4, 
-                           offset = 2, 
-                           p("Different Imputation methods")
-                         )
                        ), 
-                       br(), 
-                       fluidRow(
-                         column(
-                           width = 6, 
-                           DT::DTOutput("original_reg_summary2")
-                         ), 
-                         column(
-                           width = 6, 
-                           DT::DTOutput("reg_summary2")
-                         )
-                       ), 
-                       br(), 
-                       fluidRow(h3("Compare values"), align = "center"), 
-                       br(), 
-                       fluidRow(
-                         column(
-                           width = 2, 
-                           p("Original values")
-                         ), 
-                         column(
-                           width = 2, 
-                           offset = 4, 
-                           p("Imputed values")
-                         )
-                       ), 
-                       br(),
-                       fluidRow(
-                         column(
-                           width = 6, 
-                           DT::DTOutput(outputId = "original_DT2")
-                         ), 
-                         column(
-                           width = 6, 
-                           DT::DTOutput("imp_values2")
-                         )
-                       )
-                     ),br()
+                     br()
             )
           )
         ), 
@@ -942,7 +881,7 @@ server <- function(input, output, session) {
   ))
   #Count NAs
   output$manipulated_DT <- DT::renderDT({
-    if(input$count_chekced_sampleDT) {
+    if(input$countCheckedDT) {
       iris1[random1, ]
     }
   }, 
