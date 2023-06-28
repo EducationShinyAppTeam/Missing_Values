@@ -1,6 +1,8 @@
 # Things Needed for This Version
-1. 
-2. 
+1. Fix mice method
+2. Fix plot tab
+for plot tab, re put in conditionals for selections. Add a diabetes0 plot to show the changes
+then condense in server using if and else statements.
 
 # Ideas for Future Development
 - Add more descriptive data visulization

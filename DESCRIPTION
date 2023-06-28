@@ -4,7 +4,7 @@ Date: 2023-06-13
 Lifecycle: experimental
 Authors@R: c(
     person(given = "Daehoon", family = "Gwak", role = c("aut", "cre")),
-    person(given = "Robert", family = "Chappell", email = "rwc5541@psu.edu", role = c("ctb"))
+    person(given = "Robert", family = "Chappell", email = "rwc5541@psu.edu", role = c("aut", "ctb"))
   )
 Chapter: Data Science
 Description: p("This app provides an opportunity to examine the impact of missing values on, 
