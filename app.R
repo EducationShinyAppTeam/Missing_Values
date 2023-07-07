@@ -210,49 +210,16 @@ ui <- list(
                          choices = c('Complete Case Analysis', 'Mean', 
                                      'Fill in 0s', 'MICE')
                        )
-                     ), 
+                     ),
                      # Choose Independent variable
                      column(
                        width = 3,
-                       
-                         selectInput(
-                           inputId = "dataIndeVar",
-                           label = "Select an Independent Variable",
-                           choices = list("Age"),
-                           selected = "Age"
-                         ),
-                       
-                         selectInput(
-                           inputId = "Yiris",
-                           label = "Select an Independent Variable",
-                           choices = list("Sepal.Length"),
-                           selected = "Sepal.Length"
-                         )
-                       
-                     ), 
+                       uiOutput("dataIndeVar")
+                     ),
                      # Choose Dependent variable
                      column(
-                       width = 3, 
-                       
-                         selectInput(
-                           inputId = "Xdiabetes", 
-                           label = "Select an Independent variable", 
-                           choices = list("Pregnancies", "Glucose", 
-                                          "BloodPressure", "SkinThickness", 
-                                          "Insulin", "BMI", 
-                                          "DiabetesPedigreeFunction"), 
-                           selected = "SkinThickness"
-                         )
-                       , 
-                        
-                         selectInput(
-                           inputId = "Xiris", 
-                           label = "Select a dependent variable", 
-                           choices = list("Sepal.Width", "Petal.Length", 
-                                          "Petal.Width"), 
-                           selected = "Sepal.Width"
-                         )
-                       
+                       width = 3,
+                       uiOutput("dataDepVar")
                      )
                      ), 
                      # Count NAs in the dataset
@@ -562,6 +529,44 @@ server <- function(input, output, session) {
   random3=sample(1:768,10)
   #decide which row to drop
   random4=sample(1:5,10,replace=TRUE)
+  
+  #Variable selection
+  output$dataIndeVar <- renderUI({
+    if (input$inputLevel2 == "Diabetes") {
+      selectInput(
+        inputId = "dataIndeVar",
+        label = "Select a Independent Variable",
+        choices = c("Age"),
+        selected = "Age"
+      )
+    } else if (input$inputLevel2 == "Iris") {
+      selectInput(
+        inputId = "dataIndeVar",
+        label = "Select an Independent Variable",
+        choices = c("Sepal.Length"),
+        selected = "Sepal.Length"
+      )
+    }
+  })
+  
+  output$dataDepVar <- renderUI({
+    if (input$inputLevel2 == "Iris") {
+      selectInput(
+        inputId = "dataDepVar",
+        label = "Select a Dependent Variable",
+        choices = c("Sepal.Width", "Petal.Length", "Petal.Width"),
+        selected = "Sepal.Width"
+      )
+    } 
+    else if (input$inputLevel2 == "Diabetes") {
+      selectInput(
+        inputId = "dataDepeVar",
+        label = "Select an Dependent Variable",
+        choices = c("Pregnancies", "Glucose", "BloodPressure", "SkinThickness", "Insulin", "BMI", "DiabetesPedigreeFunction"),
+        selected = "SkinThickness"
+      )
+    }
+  })
   
   #show NAs by variable; Diabetes Dataset
   output$countNas <- renderDT({
